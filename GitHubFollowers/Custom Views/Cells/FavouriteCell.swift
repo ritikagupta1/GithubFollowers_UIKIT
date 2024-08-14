@@ -47,17 +47,22 @@ class FavouriteCell: UITableViewCell {
     }
     
     func set(with favourite: Follower) {
-        NetworkManager.shared.downloadImage(from: favourite.avatarUrl) { [weak self] image in
-            guard let self = self else {
-                return
-            }
-            
-            DispatchQueue.main.async {
-                if self.titleLabel.text == favourite.login {
-                    self.avatarImageView.image = image ?? GFImageView.placeHolderImage
-                }
+//        NetworkManager.shared.downloadImage(from: favourite.avatarUrl) { [weak self] image in
+//            guard let self = self else {
+//                return
+//            }
+//            
+//            DispatchQueue.main.async {
+//                if self.titleLabel.text == favourite.login {
+//                    self.avatarImageView.image = image ?? GFImageView.placeHolderImage
+//                }
+//            }
+//        }
+        self.titleLabel.text = favourite.login
+        Task {
+            if self.titleLabel.text == favourite.login {
+                avatarImageView.image =  await NetworkManager.shared.downloadImage(from: favourite.avatarUrl) ?? GFImageView.placeHolderImage
             }
         }
-        self.titleLabel.text = favourite.login
     }
 }

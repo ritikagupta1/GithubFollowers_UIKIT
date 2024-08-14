@@ -69,15 +69,10 @@ class FollowersListVC: GFDataLoadingVC {
     
     @objc func addFavourite() {
         showLoadingView()
-        NetworkManager.shared.getUserInfo(for: userName) { [weak self] result in
-            guard let self = self else {
-                return
-            }
-            
-            self.dismissLoadingIndicator()
-            
-            switch result {
-            case .success(let user):
+        Task {
+            do {
+                let user = try await NetworkManager.shared.getUserInfo(for: userName)
+                self.dismissLoadingIndicator()
                 PersistenceManager.updateFavourites(
                     with: Follower(login: user.login, avatarUrl: user.avatarUrl),
                     actionType: .add) { [weak self] error in
@@ -86,25 +81,70 @@ class FollowersListVC: GFDataLoadingVC {
                         }
                         
                         if let error = error {
-                            self.presentGFAlertViewController(
-                                title: "Something went wrong",
-                                message: error.rawValue,
-                                buttonTitle: "Ok")
+//                            DispatchQueue.main.async {
+                                self.presentGFAlertViewController(
+                                    title: "Something went wrong",
+                                    message: error.rawValue,
+                                    buttonTitle: "Ok")
+//                            }
                         } else {
-                            self.presentGFAlertViewController(
-                                title: "Success",
-                                message: "You have successfully favourited this user 🎊",
-                                buttonTitle: "Ok")
+//                            DispatchQueue.main.async {
+                                self.presentGFAlertViewController(
+                                    title: "Success",
+                                    message: "You have successfully favourited this user 🎊",
+                                    buttonTitle: "Ok")
+//                            }
                         }
                     }
-            
-            case .failure(let error):
-                self.presentGFAlertViewController(
-                    title: "Something went wrong",
-                    message: error.rawValue,
-                    buttonTitle: "Ok")
+            } catch {
+                self.dismissLoadingIndicator()
+                if let gfError = error as? GFError {
+                    self.presentGFAlertViewController(
+                        title: "Something went wrong",
+                        message: gfError.rawValue,
+                        buttonTitle: "Ok")
+                } else {
+                    self.presentDefaultAlertVC()
+                }
             }
         }
+       
+        //        NetworkManager.shared.getUserInfo(for: userName) { [weak self] result in
+        //            guard let self = self else {
+        //                return
+        //            }
+        //
+        //            self.dismissLoadingIndicator()
+        //
+        //            switch result {
+        //            case .success(let user):
+        //                PersistenceManager.updateFavourites(
+        //                    with: Follower(login: user.login, avatarUrl: user.avatarUrl),
+        //                    actionType: .add) { [weak self] error in
+        //                        guard let self = self else {
+        //                            return
+        //                        }
+        //
+        //                        if let error = error {
+        //                            self.presentGFAlertViewController(
+        //                                title: "Something went wrong",
+        //                                message: error.rawValue,
+        //                                buttonTitle: "Ok")
+        //                        } else {
+        //                            self.presentGFAlertViewController(
+        //                                title: "Success",
+        //                                message: "You have successfully favourited this user 🎊",
+        //                                buttonTitle: "Ok")
+        //                        }
+        //                    }
+        //
+        //            case .failure(let error):
+        //                self.presentGFAlertViewController(
+        //                    title: "Something went wrong",
+        //                    message: error.rawValue,
+        //                    buttonTitle: "Ok")
+        //            }
+        //        }
     }
     
     func setUpCollectionView() {
@@ -118,15 +158,13 @@ class FollowersListVC: GFDataLoadingVC {
     func getFollowers(page: Int) {
         self.showLoadingView()
         self.isLoadingFollowers = true
-        NetworkManager.shared.getFollowers(for: userName, page: page, completion: { [weak self] result in
-            guard let self = self else {
-                return
-            }
-            
-            self.dismissLoadingIndicator()
-           
-            switch result {
-            case let .success(followers):
+        print("1")
+        Task {
+            do {
+                print("2")
+                let followers = try await NetworkManager.shared.getFollowers(for: userName, page: page)
+                print("3")
+                self.dismissLoadingIndicator()
                 if followers.count < 100 {
                     self.hasMoreFollowers = false
                 }
@@ -147,17 +185,63 @@ class FollowersListVC: GFDataLoadingVC {
                             self.updateData(with: self.filteredFollowers)
                         }
                     }
-                   
+                    
                 }
-                
-            case .failure(let error):
-                self.presentGFAlertViewController(
-                    title: "Bad Stuff happened",
-                    message: error.rawValue,
-                    buttonTitle: "Ok")
+            } catch {
+                self.dismissLoadingIndicator()
+                if let gfError = error as? GFError {
+                    self.presentGFAlertViewController(
+                        title: "Something went wrong",
+                        message: gfError.rawValue,
+                        buttonTitle: "Ok")
+                } else {
+                    self.presentDefaultAlertVC()
+                }
             }
+            print("4")
             self.isLoadingFollowers = false
-        })
+        }
+        print("8")
+//        NetworkManager.shared.getFollowers(for: userName, page: page, completion: { [weak self] result in
+//            guard let self = self else {
+//                return
+//            }
+//            
+//            self.dismissLoadingIndicator()
+//           
+//            switch result {
+//            case let .success(followers):
+//                if followers.count < 100 {
+//                    self.hasMoreFollowers = false
+//                }
+//                self.followers.append(contentsOf: followers)
+//                if self.followers.isEmpty {
+//                    DispatchQueue.main.async {
+//                        self.followers.removeAll()
+//                        self.updateData(with: self.followers)
+//                        self.showEmptyStateView(with: "This user doesn't have any followers. Go Follow them 😄.")
+//                    }
+//                } else {
+//                    if filteredFollowers.isEmpty {
+//                        self.updateData(with: self.followers)
+//                    } else {
+//                        DispatchQueue.main.async { [weak self] in
+//                            guard let self = self else { return }
+//                            self.filteredFollowers = self.followers.filter{ $0.login.lowercased().contains(self.navigationItem.searchController?.searchBar.text?.lowercased() ?? "")}
+//                            self.updateData(with: self.filteredFollowers)
+//                        }
+//                    }
+//                   
+//                }
+//                
+//            case .failure(let error):
+//                self.presentGFAlertViewController(
+//                    title: "Bad Stuff happened",
+//                    message: error.rawValue,
+//                    buttonTitle: "Ok")
+//            }
+//            self.isLoadingFollowers = false
+//        })
     }
     
     deinit {
@@ -192,6 +276,7 @@ extension FollowersListVC: UICollectionViewDelegate {
 //        print("height -- \(height)")
 //        print("****************")
         if offSetY > contentHeight - height, hasMoreFollowers, !isLoadingFollowers {
+            print("page \(page)")
             self.page += 1
             getFollowers(page: self.page)
         }

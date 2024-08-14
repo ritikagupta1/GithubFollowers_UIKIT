@@ -44,7 +44,9 @@ class FavouriteListVC: GFDataLoadingVC {
                     }
                 }
             case .failure(let error):
-                self.presentGFAlertViewController(title: "Something went wrong", message: error.rawValue, buttonTitle: "Ok")
+                DispatchQueue.main.async {
+                    self.presentGFAlertViewController(title: "Something went wrong", message: error.rawValue, buttonTitle: "Ok")
+                }
             }
         }
     }
@@ -101,8 +103,9 @@ extension FavouriteListVC: UITableViewDataSource, UITableViewDelegate {
                 
                 return
             }
-            
-            self.presentGFAlertViewController(title: "Unable to remove the favourited user", message: error.rawValue, buttonTitle: "ok")
+            DispatchQueue.main.async {
+                self.presentGFAlertViewController(title: "Unable to remove the favourited user", message: error.rawValue, buttonTitle: "ok")
+            }
         }
     }
 }

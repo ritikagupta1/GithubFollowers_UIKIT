@@ -33,13 +33,17 @@ class GFUserInfoHeaderVC: UIViewController {
     }
     
     private func configure(with user: User) {
-        NetworkManager.shared.downloadImage(from: user.avatarUrl) { [weak self] image in
-            guard let self = self else {
-                return
-            }
-            DispatchQueue.main.async {
-                self.avatarImageView.image = image ?? GFImageView.placeHolderImage
-            }
+//        NetworkManager.shared.downloadImage(from: user.avatarUrl) { [weak self] image in
+//            guard let self = self else {
+//                return
+//            }
+//            DispatchQueue.main.async {
+//                self.avatarImageView.image = image ?? GFImageView.placeHolderImage
+//            }
+//        }
+        
+        Task {
+            self.avatarImageView.image = await NetworkManager.shared.downloadImage(from: user.avatarUrl) ?? GFImageView.placeHolderImage
         }
         loginID.text = user.login
         nameLabel.text = user.name ?? ""

@@ -30,17 +30,21 @@ class FollowerCell: UICollectionViewCell {
     
     func setup(follower: Follower) {
         self.titleLabel.text = follower.login
-        
-        NetworkManager.shared.downloadImage(from: follower.avatarUrl) { [weak self] image in
-            guard let self = self else {
-                return
-            }
-            DispatchQueue.main.async {
-                if self.titleLabel.text == follower.login {
-                    self.imageView.image = image ?? GFImageView.placeHolderImage
-                }
+        Task {
+            if titleLabel.text == follower.login {
+                imageView.image =  await NetworkManager.shared.downloadImage(from: follower.avatarUrl) ?? GFImageView.placeHolderImage
             }
         }
+//        NetworkManager.shared.downloadImage(from: follower.avatarUrl) { [weak self] image in
+//            guard let self = self else {
+//                return
+//            }
+//            DispatchQueue.main.async {
+//                if self.titleLabel.text == follower.login {
+//                    self.imageView.image = image ?? GFImageView.placeHolderImage
+//                }
+//            }
+//        }
     }
     
     private func configure() {
