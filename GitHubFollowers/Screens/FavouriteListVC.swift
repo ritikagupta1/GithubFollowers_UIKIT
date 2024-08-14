@@ -29,7 +29,7 @@ class FavouriteListVC: GFDataLoadingVC {
     
     func getFavourites() {
         PersistenceManager.retrieveFavourites { [weak self] result in
-            guard let self = self else {
+            guard let self else {
                 return
             }
             switch result {
@@ -94,13 +94,17 @@ extension FavouriteListVC: UITableViewDataSource, UITableViewDelegate {
         }
        
         PersistenceManager.updateFavourites(with: self.favourites[indexPath.row], actionType: .remove) { [weak self] error in
-            guard let self = self else {
+            guard let self else {
                 return
             }
-            guard let error = error else {
+            guard let error else {
                 self.favourites.remove(at: indexPath.row)
-                self.tableView.deleteRows(at: [indexPath], with: .left)
-                
+                DispatchQueue.main.async {
+                    self.tableView.deleteRows(at: [indexPath], with: .left)
+                    if self.favourites.isEmpty {
+                        self.showEmptyStateView(with: "No Favourites? \n Add one on the follower screen.")
+                    }
+                }
                 return
             }
             DispatchQueue.main.async {

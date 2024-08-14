@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class FollowerCell: UICollectionViewCell {
     static let reuseIdentifier = "followerCell"
@@ -29,12 +30,21 @@ class FollowerCell: UICollectionViewCell {
     }
     
     func setup(follower: Follower) {
-        self.titleLabel.text = follower.login
-        Task {
-            if titleLabel.text == follower.login {
-                imageView.image =  await NetworkManager.shared.downloadImage(from: follower.avatarUrl) ?? GFImageView.placeHolderImage
+        if #available(iOS 16.0, *) {
+            contentConfiguration = UIHostingConfiguration {
+                FollowerView(follower: follower)
+            }
+        } else {
+            // Fallback on earlier versions
+            self.titleLabel.text = follower.login
+            Task {
+                if titleLabel.text == follower.login {
+                    imageView.image =  await NetworkManager.shared.downloadImage(from: follower.avatarUrl) ?? GFImageView.placeHolderImage
+                }
             }
         }
+        
+       
 //        NetworkManager.shared.downloadImage(from: follower.avatarUrl) { [weak self] image in
 //            guard let self = self else {
 //                return

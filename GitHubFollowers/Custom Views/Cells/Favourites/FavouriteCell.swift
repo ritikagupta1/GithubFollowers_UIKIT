@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class FavouriteCell: UITableViewCell {
     static let reuseID = "favouriteCell"
@@ -58,11 +59,19 @@ class FavouriteCell: UITableViewCell {
 //                }
 //            }
 //        }
-        self.titleLabel.text = favourite.login
-        Task {
-            if self.titleLabel.text == favourite.login {
-                avatarImageView.image =  await NetworkManager.shared.downloadImage(from: favourite.avatarUrl) ?? GFImageView.placeHolderImage
+        if #available(iOS 16.0, *) {
+            contentConfiguration = UIHostingConfiguration {
+                FavouriteView(favourite: favourite)
+            }
+        } else {
+            // Fallback on earlier versions
+            self.titleLabel.text = favourite.login
+            Task {
+                if self.titleLabel.text == favourite.login {
+                    avatarImageView.image =  await NetworkManager.shared.downloadImage(from: favourite.avatarUrl) ?? GFImageView.placeHolderImage
+                }
             }
         }
+        
     }
 }

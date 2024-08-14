@@ -76,11 +76,11 @@ class FollowersListVC: GFDataLoadingVC {
                 PersistenceManager.updateFavourites(
                     with: Follower(login: user.login, avatarUrl: user.avatarUrl),
                     actionType: .add) { [weak self] error in
-                        guard let self = self else {
+                        guard let self else {
                             return
                         }
                         
-                        if let error = error {
+                        if let error {
 //                            DispatchQueue.main.async {
                                 self.presentGFAlertViewController(
                                     title: "Something went wrong",
