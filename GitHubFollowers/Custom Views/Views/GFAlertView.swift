@@ -10,7 +10,7 @@ import UIKit
 class GFAlertView: UIView {
     var titleLabel: GFTitleLabel = GFTitleLabel(fontSize: 20, alignment: .center)
     var  bodyLabel: GFBodyLabel = GFBodyLabel(alignment: .center)
-    var alertButton: GFButton = GFButton(backgroundColor: .systemPink, title: "Ok")
+    var alertButton: GFButton = GFButton(color: .systemPink, title: "Ok", systemImageName: "checkmark.square.fill")
     
     let padding: CGFloat = 20
     

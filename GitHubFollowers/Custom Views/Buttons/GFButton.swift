@@ -17,22 +17,29 @@ class GFButton: UIButton {
         fatalError("init(coder:) has not been implemented")
     }
     
-    convenience init(backgroundColor: UIColor, title: String) {
+    convenience init(color: UIColor, title: String, systemImageName: String) {
         self.init(frame: .zero)
-        self.backgroundColor = backgroundColor
-        self.setTitle(title, for: .normal)
+        self.set(color: color, title: title, systemImageName: systemImageName)
     }
     
     private func configure() {
-        self.layer.cornerRadius = 10
-        self.setTitleColor(.white, for: .normal)
-        self.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
+//        self.layer.cornerRadius = 10
+//        self.setTitleColor(.white, for: .normal)
+       // self.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
         self.translatesAutoresizingMaskIntoConstraints = false
     }
     
-    func set(backgroundColor: UIColor, title: String) {
-        self.backgroundColor = backgroundColor
-        self.setTitle(title, for: .normal)
+    func set(color: UIColor, title: String, systemImageName: String) {
+        
+        configuration = .tinted()
+        configuration?.baseBackgroundColor = color
+        configuration?.baseForegroundColor = color
+        configuration?.cornerStyle = .medium
+        configuration?.title = title
+        
+        configuration?.image = UIImage(systemName: systemImageName)
+        configuration?.imagePlacement = .trailing
+        configuration?.imagePadding = 6
     }
 }
 

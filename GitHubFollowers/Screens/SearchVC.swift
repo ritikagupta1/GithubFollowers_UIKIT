@@ -9,7 +9,7 @@ import UIKit
 
 class SearchVC: UIViewController {
     var imageView: UIImageView = UIImageView(image: .ghLogo)
-    var button: GFButton = GFButton(backgroundColor: .systemGreen, title: "Get Followers")
+    var button: GFButton = GFButton(color: .systemGreen, title: "Get Followers", systemImageName: "person.3")
     var textField: GFTextField = GFTextField()
     
     var isUserNameEntered: Bool {

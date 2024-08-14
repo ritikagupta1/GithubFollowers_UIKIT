@@ -39,7 +39,7 @@ final class NetworkManager {
             return
         }
         
-        var request = URLRequest(url: url)
+        let request = URLRequest(url: url)
 //        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
