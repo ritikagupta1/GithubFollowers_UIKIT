@@ -27,6 +27,18 @@ class FavouriteListVC: GFDataLoadingVC {
         self.navigationController?.navigationBar.prefersLargeTitles = true
     }
     
+    override func updateContentUnavailableConfiguration(using state: UIContentUnavailableConfigurationState) {
+        if self.favourites.isEmpty {
+            var config = UIContentUnavailableConfiguration.empty()
+            config.image = .init(systemName: "star")
+            config.secondaryText = "Add a favourite on the follower list screen"
+            config.text = "No Favourites"
+            contentUnavailableConfiguration = config
+        } else {
+            contentUnavailableConfiguration = nil
+        }
+    }
+    
     func getFavourites() {
         PersistenceManager.retrieveFavourites { [weak self] result in
             guard let self else {
@@ -34,15 +46,12 @@ class FavouriteListVC: GFDataLoadingVC {
             }
             switch result {
             case .success(let favourites):
-                if favourites.isEmpty {
-                    self.showEmptyStateView(with: "No Favourites? \n Add one on the follower screen.")
-                } else {
                     self.favourites = favourites
                     DispatchQueue.main.async {
+                        self.setNeedsUpdateContentUnavailableConfiguration()
                         self.tableView.reloadData()
                         self.view.bringSubviewToFront(self.tableView)
                     }
-                }
             case .failure(let error):
                 DispatchQueue.main.async {
                     self.presentGFAlertViewController(title: "Something went wrong", message: error.rawValue, buttonTitle: "Ok")
@@ -101,9 +110,7 @@ extension FavouriteListVC: UITableViewDataSource, UITableViewDelegate {
                 self.favourites.remove(at: indexPath.row)
                 DispatchQueue.main.async {
                     self.tableView.deleteRows(at: [indexPath], with: .left)
-                    if self.favourites.isEmpty {
-                        self.showEmptyStateView(with: "No Favourites? \n Add one on the follower screen.")
-                    }
+                    self.setNeedsUpdateContentUnavailableConfiguration()
                 }
                 return
             }

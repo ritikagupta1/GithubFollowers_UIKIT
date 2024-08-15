@@ -155,37 +155,43 @@ class FollowersListVC: GFDataLoadingVC {
         collectionView.register(FollowerCell.self, forCellWithReuseIdentifier: FollowerCell.reuseIdentifier)
     }
     
+    override func updateContentUnavailableConfiguration(using state: UIContentUnavailableConfigurationState) {
+        if self.followers.isEmpty, !isLoadingFollowers {
+            var config = UIContentUnavailableConfiguration.empty()
+            config.image = .init(systemName: "person.slash.fill")
+            config.text = "No Followers"
+            config.secondaryText = "This user doesn't have any followers. Go Follow them 😄."
+            contentUnavailableConfiguration = config
+        } else if isSearching && filteredFollowers.isEmpty {
+            contentUnavailableConfiguration = UIContentUnavailableConfiguration.search()
+        } else {
+            contentUnavailableConfiguration = nil
+        }
+    }
+    
     func getFollowers(page: Int) {
         self.showLoadingView()
         self.isLoadingFollowers = true
-        print("1")
+
         Task {
             do {
-                print("2")
                 let followers = try await NetworkManager.shared.getFollowers(for: userName, page: page)
-                print("3")
+                
                 self.dismissLoadingIndicator()
+                
                 if followers.count < 100 {
                     self.hasMoreFollowers = false
                 }
                 self.followers.append(contentsOf: followers)
-                if self.followers.isEmpty {
-                    DispatchQueue.main.async {
-                        self.followers.removeAll()
-                        self.updateData(with: self.followers)
-                        self.showEmptyStateView(with: "This user doesn't have any followers. Go Follow them 😄.")
-                    }
-                } else {
-                    if filteredFollowers.isEmpty {
-                        self.updateData(with: self.followers)
-                    } else {
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
-                            self.filteredFollowers = self.followers.filter{ $0.login.lowercased().contains(self.navigationItem.searchController?.searchBar.text?.lowercased() ?? "")}
-                            self.updateData(with: self.filteredFollowers)
-                        }
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    if isSearching {
+                        self.filteredFollowers = self.followers.filter{ $0.login.lowercased().contains(self.navigationItem.searchController?.searchBar.text?.lowercased() ?? "")}
                     }
                     
+                    self.updateData(with: isSearching ? self.filteredFollowers : self.followers)
+                    self.setNeedsUpdateContentUnavailableConfiguration()
                 }
             } catch {
                 self.dismissLoadingIndicator()
@@ -198,10 +204,10 @@ class FollowersListVC: GFDataLoadingVC {
                     self.presentDefaultAlertVC()
                 }
             }
-            print("4")
+
             self.isLoadingFollowers = false
         }
-        print("8")
+        
 //        NetworkManager.shared.getFollowers(for: userName, page: page, completion: { [weak self] result in
 //            guard let self = self else {
 //                return
@@ -304,6 +310,7 @@ extension FollowersListVC: UISearchResultsUpdating {
         
         filteredFollowers = followers.filter{  $0.login.lowercased().contains(searchText.lowercased())}
         updateData(with: filteredFollowers)
+        setNeedsUpdateContentUnavailableConfiguration()
     }
     
 //    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
